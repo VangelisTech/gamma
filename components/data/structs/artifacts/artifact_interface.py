@@ -41,6 +41,7 @@ class Artifact:
 
         self.accessor = ArtifactAccessor(df, io_config, uri_prefix)
         self.factory = ArtifactFactory(schema=self.schema, )
+
         
         
 
@@ -61,7 +62,7 @@ class Artifact:
             files (List[str]): List of file paths to add.
             uri_prefix (Optional[str]): Prefix for the artifact URI.
         """
-        new_df = self._load_files(files, uri_prefix, io_config)
+        new_df = self.factory.add_files()
         self.df = self.df.concat(new_df).collect()
 
 

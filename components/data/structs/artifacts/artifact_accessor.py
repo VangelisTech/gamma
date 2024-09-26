@@ -29,6 +29,7 @@ class ArtifactAccessor:
         self.df = df
         self.io_config = io_config
         self.uri_prefix = uri_prefix
+        
     def get(self, query_df: daft.DataFrame) -> daft.DataFrame:
         """
         Get the delta from deltacat. 

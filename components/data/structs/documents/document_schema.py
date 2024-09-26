@@ -57,6 +57,12 @@ content_node_fields = [
     pa.field("node_metadata", pa.map_(pa.string(), pa.string()), nullable=True), 
 ]
 
+document_fields = [
+    pa.field("doc_id", pa)
+    pa.field("nodes", pa.list_(pa.struct(content_node_fields))),
+    
+]
+
 class ContentNode:
     schema: pa.Schema = pa.schema(content_node_fields)
 

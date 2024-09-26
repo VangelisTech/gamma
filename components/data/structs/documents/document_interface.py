@@ -1,6 +1,6 @@
 # Define Enums and Pydantic Models
 import pyarrow as pa
-
+from gamma.components.base
 
 content_type_enum = pa.map_(pa.string(), pa.string())
 pa.table([], schema=content_type_enum)
@@ -36,6 +36,7 @@ video_node_metadata_fields = [
     pa.field("width", pa.int32()),
     pa.field("height", pa.int32()),
     pa.field("frame_rate", pa.float32())
+
 ]
 
 # Edge fields
