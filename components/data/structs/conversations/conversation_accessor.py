@@ -1,8 +1,8 @@
 class ConversationAccessor:
-    def __init__(self, df: daft.DataFrame, io_config: IOConfig, uri_prefix: str):
+    def __init__(self, df: daft.DataFrame, io_config: IOConfig, uri: str):
         self.df = df
         self.io_config = io_config
-        self.uri_prefix = uri_prefix
+        self.uri = uri
 
     async def create_conversation_branch(self, conversation_id: str, new_branch_id: str, latest_commit: str) -> Dict[str, Any]:
         # Implementation for creating a new branch

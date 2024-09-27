@@ -8,7 +8,8 @@ pa.table([], schema=content_type_enum)
 # Base content node fields
 base_content_node_fields = [
     pa.field("node_id", pa.string()),
-    pa.field("content_type", content_type_enum),
+    pa.field("node_type", content_type_enum),
+    pa.field("")
     pa.field("metadata", pa.map_(pa.string(), pa.string()))  # Simplified metadata as string key-value pairs
 ]
 
@@ -18,7 +19,7 @@ text_node_fields = base_content_node_fields + [
 ]
 
 # Image node fields
-image_node_fields = base_content_node_fields + [
+image_node_meta_fields = base_content_node_fields + [
     pa.field("image_data", pa.binary()),
     pa.field("width", pa.int32()),
     pa.field("height", pa.int32())
@@ -39,13 +40,6 @@ video_node_metadata_fields = [
 
 ]
 
-# Edge fields
-edge_fields = [
-    pa.field("edge_id", pa.string()),
-    pa.field("from_node", pa.string()),
-    pa.field("to_node", pa.string()),
-    pa.field("metadata", pa.map_(pa.string(), pa.string()))  # Simplified metadata as string key-value pairs
-]
 
 content_node_schema = pa.schema(content_node_fields)
 edge_schema = pa.schema(edge_fields)
@@ -65,10 +59,13 @@ class Document(BaseModel):
         - PDF
         - Markdown
         - Code (ie python, sql, HTML, typescript, etc)
+
+    Roadmap: 
+        - 3D
+        - Timeseries (Wide Tables)
     """
     document_id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     nodes: List[ContentNode]
-    edges: List[Edge]
     created_at: datetime = Field(default_factory=datetime.utcnow)
     
     def get_nodes_by_type(self, content_type: ContentType) -> List[ContentNode]:

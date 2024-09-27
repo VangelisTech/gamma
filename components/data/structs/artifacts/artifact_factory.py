@@ -1,4 +1,3 @@
-import daft
 from typing import List, Dict, Any, Optional, Callable
 import os
 import mimetypes
@@ -6,18 +5,45 @@ import hashlib
 from ulid import ULID
 from gamma.components.data.structs.artifacts.artifact import Artifact
 
+from .artifact_schema import artifact_schema
+
 class ArtifactFactory:
-    def __init__(self, schema: Dict[str, Any], df: Optional[daft.DataFrame] = None):
+    schema: daft.Schema = daft.Schema(artifact_schema)
+    type: ClassVar[str] = "ArtifactFactory"
+
+    def __init__(self,
+        io_config: Optional[IOConfig] = None, 
+        uri: Optional[str] = ""
+     ):
+        self.io_config = io_config
+        self.uri = uri
+        
         if df is None:
-            empty_data = {field.name: field.type for field in self.schema.to_pyarrow_schema().fields}
-            self.df = daft.from_pydict(empty_data, schema=self.schema)
-            if files:
-                self.df = self.from_files(files, uri_prefix, self.io_config)
+            self.df = 
         else:
-            self.df = self.from_files(files, uri_prefix, self.io_config)
+            self.df = self.from_dataframe(df)
+        
+        if files is not None:
+            self.df = self.from_files(files, uri, io_config)
+        
+        if 
+            self.df = self.from_files(files, uri, self.io_config)
 
         self.df = self.validate_schema(self.df)
 
+    def from_schema(schema: Dict[str, Any]) -> 'Artifact':
+        """
+        Create an Artifact instance from an Artifact Schema.
+        
+        Args:
+            schema (Dict[str, Any]): The schema to create the Artifact from.
+        
+        Returns:
+            Artifact: An instance of Artifact.
+        """
+        df = daft.from_arrow(base_schema.empty_table())
+        return Artifact(df=df)
+    
     def from_dataframe(df: daft.DataFrame) -> 'Artifact':
         """
         Create an Artifact instance from a Daft DataFrame.
@@ -28,7 +54,21 @@ class ArtifactFactory:
         Returns:
             Artifact: An instance of Artifact.
         """
+
         return Artifact(df=df)
+
+    def validate_schema(df: daft.DataFrame) -> daft.DataFrame:
+        """
+        Validate the schema of the DataFrame.
+        
+        Args:
+            df (daft.DataFrame): The DataFrame to validate.
+        
+        Returns:
+            daft.DataFrame: The validated DataFrame.
+        """
+        return df
+    
 
     def from_files(
         self,
@@ -57,8 +97,8 @@ class ArtifactFactory:
             now = ulid_id.datetime
             file_name = os.path.basename(file)
             file_name = file_name.replace(" ", "_")
-            artifact_uri_prefix = self.get_artifact_uri_prefix(custom_prefix, io_config)
-            artifact_uri = f"{artifact_uri_prefix}{file_id}__{file_name}"
+            artifact_uri = self.get_artifact_uri(custom_prefix, io_config)
+            artifact_uri = f"{artifact_uri}{file_id}__{file_name}"
 
             new_row = {
                 "id": file_id,
@@ -96,33 +136,3 @@ class ArtifactFactory:
         
         combined_df = daft.([artifact.df for artifact in artifacts])
         return Artifact(df=combined_df)
-
-    @staticmethod
-    def map(artifact: 'Artifact', func: Callable[[daft.DataFrame], daft.DataFrame]) -> 'Artifact':
-        """
-        Apply a mapping function to the Artifact's DataFrame.
-        
-        Args:
-            artifact (Artifact): The input Artifact.
-            func (Callable[[daft.DataFrame], daft.DataFrame]): The mapping function.
-        
-        Returns:
-            Artifact: A new Artifact with the mapping function applied.
-        """
-        mapped_df = func(artifact.df)
-        return Artifact(df=mapped_df)
-
-    @staticmethod
-    def flatmap(artifact: 'Artifact', func: Callable[[daft.DataFrame], List[daft.DataFrame]]) -> List['Artifact']:
-        """
-        Apply a flatmap function to the Artifact's DataFrame.
-        
-        Args:
-            artifact (Artifact): The input Artifact.
-            func (Callable[[daft.DataFrame], List[daft.DataFrame]]): The flatmap function.
-        
-        Returns:
-            List[Artifact]: A list of new Artifacts resulting from the flatmap operation.
-        """
-        dataframes = func(artifact.df)
-        return [Artifact(df=df) for df in dataframes]

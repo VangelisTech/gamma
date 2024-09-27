@@ -56,4 +56,6 @@ artifact_fields = [
 
 artifact_schema = base_schema.append(artifact_fields)
 
-print(artifact_schema)
+
+    
+    

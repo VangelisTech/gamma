@@ -12,23 +12,27 @@ from daft import col
 from daft.io import IOConfig
 from ulid import ULID
 
-from ..utils.base_utils import get_artifact_uri_prefix, get_by_id
+from ..utils.base_utils import get_artifact_uri, get_by_id
 
 class ArtifactAccessor:
     """
     Accessor class for managing artifacts.
     Provides methods for CRUD operations on artifacts using upsert with sorted bucket merge join.
     """
+    schema: ClassVar[daft.Schema] = daft.Schema(artifact_schema)
+    type: ClassVar[str] = "ArtifactAcessor"
 
     def __init__(
         self,
         df: daft.DataFrame,
         io_config: Optional[IOConfig] = None,
-        uri_prefix: Optional[str] = "",
+        uri: Optional[str] = "",
     ):
         self.df = df
         self.io_config = io_config
-        self.uri_prefix = uri_prefix
+        self.uri = uri
+
+        self.schema_wrapper = SchemaWrapper(self.schema)
         
     def get(self, query_df: daft.DataFrame) -> daft.DataFrame:
         """
@@ -61,8 +65,8 @@ class ArtifactAccessor:
             file_id = str(ulid_id)
             now = ulid_id.datetime
             file_name = os.path.basename(file).replace(" ", "_")
-            artifact_uri_prefix = get_artifact_uri_prefix(self.uri_prefix, self.io_config)
-            artifact_uri = f"{artifact_uri_prefix}{file_id}__{file_name}"
+            artifact_uri = get_artifact_uri(self.uri, self.io_config)
+            artifact_uri = f"{artifact_uri}{file_id}__{file_name}"
 
             new_row = {
                 "id": file_id,
@@ -81,8 +85,9 @@ class ArtifactAccessor:
             }
             rows.append(new_row)
 
-                new_df = daft.from_pylist(rows, schema=self.df.schema)
-        
+        new_df = daft.from_pylist(rows, schema=self.df.schema)
+        new_df = new_df.repartition(partition_by=["id"], num_partitions= len(rows)/100000)
+
         # Perform the upsert using a left anti join followed by a union
         existing_ids = self.df.join(
             new_df,

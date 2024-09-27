@@ -25,23 +25,24 @@ class Artifact:
     Integrates with Ray for distributed processing.
     """
 
-    schema: ClassVar[daft.Schema] = daft.Schema(artifact_schema)
-    obj_type: ClassVar[str] = "Artifact"
+    
+    type: ClassVar[str] = "artifact"
 
     def __init__(
         self,
         files: Optional[List[str]] = None,
         df: Optional[daft.DataFrame] = None,
         io_config: Optional[IOConfig] = IOConfig(),
-        uri_prefix: Optional[str] = "",
+        uri: Optional[str] = "",
     ):
         self.io_config = io_config
-        self.uri_prefix = uri_prefix
+        self.uri = uri
         self.df = df
 
-        self.accessor = ArtifactAccessor(df, io_config, uri_prefix)
-        self.factory = ArtifactFactory(schema=self.schema, )
-
+        self.schema_wrapper = SchemaWrapper(self.schema)
+        self.accessor = ArtifactAccessor(df, io_config, uri)
+        self.factory = ArtifactFactory(, df=df)
+daft.from_arrow(base_schema.empty_table())
         
         
 
@@ -52,7 +53,7 @@ class Artifact:
     def add_files(
         self,
         files: List[str],
-        uri_prefix: Optional[str] = "",
+        uri: Optional[str] = "",
         io_config: Optional[IOConfig] = None,
     ) -> None:
         """
@@ -60,7 +61,7 @@ class Artifact:
 
         Parameters:
             files (List[str]): List of file paths to add.
-            uri_prefix (Optional[str]): Prefix for the artifact URI.
+            uri (Optional[str]): Prefix for the artifact URI.
         """
         new_df = self.factory.add_files()
         self.df = self.df.concat(new_df).collect()

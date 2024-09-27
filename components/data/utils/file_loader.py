@@ -22,7 +22,7 @@ class FileLoader:
     def load_files(
         self,
         files: List[str],
-        uri_prefix: Optional[str] = "",
+        uri: Optional[str] = "",
         io_config: Optional[Any] = None,
         obj_type: str = "Artifact"
     ) -> Result[daft.DataFrame]:
@@ -36,7 +36,7 @@ class FileLoader:
                 file_id = str(ulid_id)
                 now = ulid_id.datetime
                 file_name = os.path.basename(file).replace(" ", "_")
-                artifact_uri = self.uri_manager.get_artifact_uri(file_id, file_name, uri_prefix, io_config)
+                artifact_uri = self.uri_manager.get_artifact_uri(file_id, file_name, uri, io_config)
 
                 new_row = {
                     "id": file_id,

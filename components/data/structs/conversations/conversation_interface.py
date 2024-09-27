@@ -11,13 +11,13 @@ class Conversation:
         self,
         df: Optional[daft.DataFrame] = None,
         io_config: Optional[IOConfig] = IOConfig(),
-        uri_prefix: Optional[str] = "",
+        uri: Optional[str] = "",
     ):
         self.io_config = io_config
-        self.uri_prefix = uri_prefix
+        self.uri = uri
         self.df = df
 
-        self.accessor = ConversationAccessor(self.df, self.io_config, self.uri_prefix)
+        self.accessor = ConversationAccessor(self.df, self.io_config, self.uri)
 
         if df is None:
             empty_data = {field.name: field.type for field in self.schema.to_pyarrow_schema().fields}

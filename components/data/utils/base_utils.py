@@ -19,12 +19,12 @@ def export_to_parquet(df: DataFrame, prefix: str, io_config: Optional[IOConfig] 
         io_config (Optional[IOConfig]): Optional IOConfig for the URI.
     """
     if io_config:
-        uri_prefix = get_uri_prefix(prefix, io_config)
-        return df.write_parquet(uri_prefix, io_config=io_config)
+        uri = get_uri(prefix, io_config)
+        return df.write_parquet(uri, io_config=io_config)
     else:
         return df.write_parquet(path)
 
-def get_uri_prefix(
+def get_uri(
     custom_prefix: Optional[str] = None,
     io_config: Optional[IOConfig] = None,
     ) -> str:
